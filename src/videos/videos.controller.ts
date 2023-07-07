@@ -1,25 +1,29 @@
-import { Controller, Get, StreamableFile, Headers, Header, Res, HttpStatus } from '@nestjs/common';
-import { VideosService } from '../services/videos.service';
-import { createReadStream, statSync } from 'fs';
-import { join } from 'path';
-import { Response } from 'express';
+import { Controller, Get, StreamableFile, Headers, Header, Res, HttpStatus, Param } from '@nestjs/common';
 
+import { Response } from 'express';
+import { join } from 'path';
+
+import { createReadStream, statSync } from 'fs';
+
+import { VideosService } from './videos.service';
+import { Video } from './entities/videos.entity';
 
 @Controller('videos')
 export class VideosController {
     constructor(private readonly videos: VideosService) {
     }
 
-    @Get()
-    async sendRecently() {
-        return this.videos.sendRecently();
-    }
 
-    @Header('Accept-Ranges', 'bytes')
-    @Header('Content-Type', 'video/mp4')
-    @Get('get')
-    async sendVideo(@Headers() headers, @Res() res: Response) {
-        const video = "/video-server/videos/kek.mp4";
+    @Get('test')
+    async sendTest(): Promise<Video[]> {
+        return this.videos.getAll();
+    };
+
+
+    @Get(':id')
+    async sendRecently(@Param('id') id: string, @Headers() headers, @Res() res: Response): Promise<void | null> {
+        const video = await this.videos.getVideoPath(+id);
+        if (video === null) return null;
 
         const { size } = statSync(video);
         const videoRange = headers.range;
@@ -47,6 +51,8 @@ export class VideosController {
             createReadStream(video).pipe(res);
 
         }
-
     }
+
+
 }
+
