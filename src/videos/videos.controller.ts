@@ -1,12 +1,29 @@
-import { Controller, Get, StreamableFile, Headers, Header, Res, HttpStatus, Param } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    UploadedFile,
+    UseInterceptors,
+    StreamableFile,
+    Headers,
+    Header,
+    Res,
+    HttpStatus,
+    Param,
+    Post, Body,
+} from '@nestjs/common';
 
 import { Response } from 'express';
-import { join } from 'path';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from '../configs/multer.config';
 
+import { join } from 'path';
 import { createReadStream, statSync } from 'fs';
 
 import { VideosService } from './videos.service';
+
 import { Video } from './entities/videos.entity';
+import { CreateVideoDto } from './dto/create-video.dto';
+
 
 @Controller('videos')
 export class VideosController {
@@ -14,13 +31,13 @@ export class VideosController {
     }
 
 
-    @Get('test')
+    @Get()
     async sendTest(): Promise<Video[]> {
         return this.videos.getAll();
     };
 
 
-    @Get(':id')
+    @Get('video/:id')
     async sendRecently(@Param('id') id: string, @Headers() headers, @Res() res: Response): Promise<void | null> {
         const video = await this.videos.getVideoPath(+id);
         if (video === null) return null;
@@ -53,6 +70,21 @@ export class VideosController {
         }
     }
 
+    @Post('video/upload')
+    @UseInterceptors(FileInterceptor('file', multerConfig))
+    async upload(@UploadedFile() file: Express.Multer.File, @Body() data: {desc:string, name:string}) {
+
+        const video = {
+            videoid: +(file.filename.split("-")[0]),
+            userid:0,
+            name:data.name,
+            description:data.desc,
+            time:Date.now(),
+        };
+
+
+      await this.videos.uploadVideo(video)
+    }
 
 }
 
