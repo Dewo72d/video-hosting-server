@@ -25,7 +25,7 @@ export class VideosService {
 
         if (res === null) return null;
         console.log('RES >>> ', res);
-        return `/video-server/videos/${res.videoid}-upload.mp4`;
+        return `/video-server/videos/${res.videoid}.mp4`;
     }
 
     public async uploadVideo(videoDto: CreateVideoDto): Promise<string> {

@@ -74,8 +74,9 @@ export class VideosController {
     @UseInterceptors(FileInterceptor('file', multerConfig))
     async upload(@UploadedFile() file: Express.Multer.File, @Body() data: {desc:string, name:string}) {
 
+        console.log("FILE >> ", file); //ADD TYPE
         const video = {
-            videoid: +(file.filename.split("-")[0]),
+            videoid: +(file.filename.split(".")[0]),
             userid:0,
             name:data.name,
             description:data.desc,
