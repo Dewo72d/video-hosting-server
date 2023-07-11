@@ -4,11 +4,11 @@ import { IsString, IsNotEmpty, IsNumber } from "class-validator";
 export class CreateVideoDto {
     @IsNotEmpty()
     @IsNumber()
-    videoid: number;
+    video: string;
 
     @IsNotEmpty()
     @IsNumber()
-    userid:number;
+    user_id:number;
 
     @IsNotEmpty()
     @IsString()

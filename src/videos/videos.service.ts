@@ -25,19 +25,17 @@ export class VideosService {
 
         if (res === null) return null;
         console.log('RES >>> ', res);
-        return `/video-server/videos/${res.videoid}.mp4`;
+        return `/video-server/videos/${res.video}`;
     }
 
-    public async uploadVideo(videoDto: CreateVideoDto): Promise<string> {
+    public async uploadVideo(videoDto: CreateVideoDto): Promise<void> {
         console.log('DTO >>> ', videoDto);
         const res = await this.repository.save(Video, {
             name: videoDto.name,
             description: videoDto.description,
-            userid: videoDto.userid,
+            user_id: videoDto.user_id,
             time: videoDto.time,
-            videoid: videoDto.videoid,
+            video: videoDto.video,
         });
-        console.log('RES >>> ', res);
-        return 'kryto';
     }
 }

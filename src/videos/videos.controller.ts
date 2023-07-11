@@ -61,9 +61,7 @@ export class VideosController {
             res.writeHead(HttpStatus.PARTIAL_CONTENT, head); //206
             readStreamFile.pipe(res);
         } else {
-            const head = {
-                'Content-Length': size,
-            };
+            const head = { 'Content-Length': size, };
             res.writeHead(HttpStatus.OK, head);
             createReadStream(video).pipe(res);
 
@@ -72,20 +70,30 @@ export class VideosController {
 
     @Post('video/upload')
     @UseInterceptors(FileInterceptor('file', multerConfig))
-    async upload(@UploadedFile() file: Express.Multer.File, @Body() data: {desc:string, name:string}) {
+    async upload(
+        @UploadedFile() file: Express.Multer.File,
+        @Body() data: { desc: string, name: string },
+        @Res() res: Response
+    ) {
+        try {
+            if(data.desc.length === 0 || data.name.length === 0) throw Error("EMPTY FIELDS");
 
-        console.log("FILE >> ", file); //ADD TYPE
-        const video = {
-            videoid: +(file.filename.split(".")[0]),
-            userid:0,
-            name:data.name,
-            description:data.desc,
-            time:Date.now(),
-        };
+            const video = {
+                video: file.filename,
+                user_id: 0,
+                name: data.name,
+                description: data.desc,
+                time: Date.now(),
+            };
 
-
-      await this.videos.uploadVideo(video)
+            await this.videos.uploadVideo(video)
+            return res.writeHead(HttpStatus.OK).send();
+        } catch (error) {
+            console.log("ERR >> ", error, "\n");
+            return res.writeHead(HttpStatus.NOT_IMPLEMENTED, "SOMETHING WENT WRONG").send();
+        }
     }
+
 
 }
 
