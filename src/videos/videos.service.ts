@@ -11,17 +11,16 @@ export class VideosService {
     constructor(
         @InjectEntityManager()
         private repository: EntityManager,
-    ) {
-    }
+    ) { }
 
     public async getAll(): Promise<Video[]> {
         const res = await this.repository.find(Video);
         return res;
     };
 
-    public async getVideoPath(id: number): Promise<string | null> {
+    public async getVideoPath(video: string): Promise<string | null> {
 
-        const res = await this.repository.findOne(Video, { where: { id: id } });
+        const res = await this.repository.findOne(Video, { where: { video: video } });
 
         if (res === null) return null;
         console.log('RES >>> ', res);

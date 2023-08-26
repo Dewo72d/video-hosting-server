@@ -39,7 +39,10 @@ export class VideosController {
 
     @Get('video/:id')
     async sendRecently(@Param('id') id: string, @Headers() headers, @Res() res: Response): Promise<void | null> {
-        const video = await this.videos.getVideoPath(+id);
+
+        console.log("VIDE >>> ", id);
+        const video = await this.videos.getVideoPath(id);
+        
         if (video === null) return null;
 
         const { size } = statSync(video);
@@ -74,7 +77,7 @@ export class VideosController {
         @UploadedFile() file: Express.Multer.File,
         @Body() data: { desc: string, name: string },
         @Res() res: Response
-    ) {
+    ) { 
         try {
             if(data.desc.length === 0 || data.name.length === 0) throw Error("EMPTY FIELDS");
 

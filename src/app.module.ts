@@ -5,28 +5,34 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 
 import { VideosModule } from './videos/videos.module';
-import { VideosController } from './videos/videos.controller';
-import { VideosService } from './videos/videos.service';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+
+//Entities
 import { Video } from './videos/entities/videos.entity';
+import { User } from './users/entities/user.entity';
+
 
 @Module({
     imports: [
-        ConfigModule.forRoot({ envFilePath: './env' }),
+        ConfigModule.forRoot({ envFilePath: '.env', isGlobal:true }),
         TypeOrmModule.forRoot({
-            port: 5432,
+            port: +(process.env.DB_PORT),
             host: '0.0.0.0',
-            username: 'postgres',
-            password: 'bigfuckinpassword',
-            database: 'videos',
+            username: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_DATABASE,
             type: 'postgres',
-            entities: [Video],
+            entities: [Video, User],
             synchronize: true, // never use TRUE in production!
 
         }),
         VideosModule,
+        AuthModule,
+        UsersModule,
     ],
-    controllers: [VideosController],
-    providers: [VideosService],
+    /* controllers: [VideosController], */
+    /* providers: [VideosService], */
 })
 export class AppModule {
 }
