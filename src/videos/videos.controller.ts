@@ -30,9 +30,8 @@ export class VideosController {
     constructor(private readonly videos: VideosService) {
     }
 
-
     @Get()
-    async sendTest(): Promise<Video[]> {
+    async getAll(): Promise<Video[]> {
         return this.videos.getAll();
     };
 
@@ -40,7 +39,7 @@ export class VideosController {
     @Get('video/:id')
     async sendRecently(@Param('id') id: string, @Headers() headers, @Res() res: Response): Promise<void | null> {
 
-        console.log("VIDE >>> ", id);
+        console.log("VIDEO >>> ", id);
         const video = await this.videos.getVideoPath(id);
         
         if (video === null) return null;

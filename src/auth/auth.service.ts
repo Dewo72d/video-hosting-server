@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 
@@ -10,8 +10,8 @@ export class AuthService {
     private jwtService: JwtService
   ) { }
 
-  async signIn(id: number, password: string) {
-    const user = await this.userService.findOne(id);
+  async signIn(username: string, password: string) {
+    const user = await this.userService.findOne(username);
 
     if (user?.password !== password) {
       throw new UnauthorizedException();
@@ -19,10 +19,26 @@ export class AuthService {
 
     const payload = { username: user.username, password: user.password }
 
-    return {
-      clown_token: await this.jwtService.signAsync(payload)
-    }
+    return await this.jwtService.signAsync(payload);
+
   }
 
+  async signUp(username: string, password: string) {
+    const user = await this.userService.findOne(username);
+
+    if (user) throw Error("A user with this nickname exists");
+
+    const newUser = await this.userService.create({
+      username,
+      password,
+      time: Date.now()
+    });
+
+    console.log("FINALY RES >>>> ", newUser);
+
+    return "user has been created"
+    
+
+  }
 
 }

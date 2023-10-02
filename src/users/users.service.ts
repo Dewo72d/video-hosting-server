@@ -13,16 +13,17 @@ export class UsersService {
     private repo: EntityManager
   ) { }
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    const res = await this.repo.save(User, { username: createUserDto.username, password: createUserDto.password, time: createUserDto.time })
+    console.log("DB SIGNUP RES >> ", createUserDto);
+    return res;
+
   }
 
-  findAll() {
-    return `This action returns all users`;
-  }
+  async findOne(username: string) {
+    console.log("username >> ", username);
 
-  async findOne(id: number) {
-    const res = await this.repo.findOne(User, { where: { id: id } });
+    const res = await this.repo.findOne(User, { where: { username: username } });
     if (res === null) return null;
     return res;
   }
