@@ -8,19 +8,22 @@ export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const {clown_token} = await context.switchToHttp().getRequest().cookies;
+    const req = await context.switchToHttp().getRequest();
+    const { clown_token } = req.cookies;
 
-    console.log("req.cookies>>>", clown_token);
 
     if (!clown_token) {
       throw new UnauthorizedException();
     }
 
     try {
-      const verifyToken = await this.jwtService.verifyAsync(clown_token, { secret: process.env.JWT })
-      console.log("verifyToken >> ", verifyToken);
+      const user = await this.jwtService.verifyAsync(clown_token, { secret: process.env.JWT });
+      req.user = {
+        username: user.username,
+        id: user.id
+      }
     } catch (error) {
-      console.log("Error JWT >> ", error);
+      console.log("Error JWT >> \n", error);
       throw new UnauthorizedException();
     }
 

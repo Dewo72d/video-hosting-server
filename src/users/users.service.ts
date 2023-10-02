@@ -21,8 +21,6 @@ export class UsersService {
   }
 
   async findOne(username: string) {
-    console.log("username >> ", username);
-
     const res = await this.repo.findOne(User, { where: { username: username } });
     if (res === null) return null;
     return res;

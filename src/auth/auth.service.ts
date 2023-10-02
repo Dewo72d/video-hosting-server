@@ -17,7 +17,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const payload = { username: user.username, password: user.password }
+    const payload = { username: user.username, password: user.password, id: user.id }
 
     return await this.jwtService.signAsync(payload);
 
@@ -37,7 +37,7 @@ export class AuthService {
     console.log("FINALY RES >>>> ", newUser);
 
     return "user has been created"
-    
+
 
   }
 
