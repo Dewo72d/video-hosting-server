@@ -23,7 +23,7 @@ export class AuthGuard implements CanActivate {
         id: user.id
       }
     } catch (error) {
-      console.log("Error JWT >> \n", error);
+      //console.log("Error JWT >> \n", error);
       throw new UnauthorizedException();
     }
 

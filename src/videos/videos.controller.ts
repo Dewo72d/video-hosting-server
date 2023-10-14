@@ -9,20 +9,23 @@ import {
     Res,
     HttpStatus,
     Param,
-    Post, Body,
+    Post, Body, Req, UsePipes,
 } from '@nestjs/common';
+
+import { createReadStream, statSync } from 'fs';
 
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../configs/multer.config';
+import { GetUserFromJwt } from 'src/decorators/get-user-from-jwt.decorator';
 
-import { join } from 'path';
-import { createReadStream, statSync } from 'fs';
 
 import { VideosService } from './videos.service';
 
+import { VideoWithUsername } from './dto/video-with-username.dto';
 import { Video } from './entities/videos.entity';
-import { CreateVideoDto } from './dto/create-video.dto';
+
+
 
 
 @Controller('videos')
@@ -31,17 +34,22 @@ export class VideosController {
     }
 
     @Get()
-    async getAll(): Promise<Video[]> {
+    async getAll(): Promise<VideoWithUsername[]> {
         return this.videos.getAll();
     };
+
+    @Get('/channel/:username/:uid')
+    async getUserVideos(@Param("uid") uid: number): Promise<VideoWithUsername[]> {
+        const videos = this.videos.getUserVideos(uid);
+        return videos;
+    }
 
 
     @Get('video/:id')
     async sendRecently(@Param('id') id: string, @Headers() headers, @Res() res: Response): Promise<void | null> {
 
-        console.log("VIDEO >>> ", id);
         const video = await this.videos.getVideoPath(id);
-        
+
         if (video === null) return null;
 
         const { size } = statSync(video);
@@ -75,14 +83,15 @@ export class VideosController {
     async upload(
         @UploadedFile() file: Express.Multer.File,
         @Body() data: { desc: string, name: string },
-        @Res() res: Response
-    ) { 
+        @Res() res: Response,
+        @GetUserFromJwt() user: any
+    ) {
         try {
-            if(data.desc.length === 0 || data.name.length === 0) throw Error("EMPTY FIELDS");
+            if (data.desc.length === 0 || data.name.length === 0) throw Error("EMPTY FIELDS");
 
             const video = {
                 video: file.filename,
-                user_id: 0,
+                user_id: user.id,
                 name: data.name,
                 description: data.desc,
                 time: Date.now(),

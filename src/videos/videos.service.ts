@@ -1,9 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { InjectEntityManager } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm';
-import { Video } from './entities/videos.entity';
-import { CreateVideoDto } from './dto/create-video.dto';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
+
+import { CreateVideoDto } from './dto/create-video.dto';
+import { VideoWithUsername } from './dto/video-with-username.dto';
+
+import { Video } from './entities/videos.entity';
+
+
+/**
+ * @todo pagitanion
+ */
 
 @Injectable()
 export class VideosService {
@@ -13,22 +21,41 @@ export class VideosService {
         private repository: EntityManager,
     ) { }
 
-    public async getAll(): Promise<Video[]> {
-        const res = await this.repository.find(Video);
-        return res;
+
+    public async getAll(): Promise<VideoWithUsername[]> {
+        const res = await this.repository.find(Video, { relations: ["user"] });
+
+        const obj = res.map(video => ({
+            ...video,
+            user: { username: video.user.username }
+        }));
+
+        return obj;
     };
+
+    public async getUserVideos(uid: number): Promise<VideoWithUsername[]> {
+        const res = await this.repository.find(Video, { relations: ["user"], where: { user_id: uid } })
+
+        
+        const obj = res.map(video => ({
+            ...video,
+            user: { username: video.user.username }
+        }));
+        
+        console.log("UID >>> ", uid, "\n RES >> ", obj);
+
+        return obj;
+    }
 
     public async getVideoPath(video: string): Promise<string | null> {
 
         const res = await this.repository.findOne(Video, { where: { video: video } });
 
         if (res === null) return null;
-        console.log('RES >>> ', res);
         return `/video-server/videos/${res.video}`;
     }
 
     public async uploadVideo(videoDto: CreateVideoDto): Promise<void> {
-        console.log('DTO >>> ', videoDto);
         const res = await this.repository.save(Video, {
             name: videoDto.name,
             description: videoDto.description,
