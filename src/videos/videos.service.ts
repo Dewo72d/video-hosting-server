@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { unlink } from 'fs/promises';
 import { EntityManager, Repository } from 'typeorm';
 
 
@@ -36,13 +37,13 @@ export class VideosService {
     public async getUserVideos(uid: number): Promise<VideoWithUsername[]> {
         const res = await this.repository.find(Video, { relations: ["user"], where: { user_id: uid } })
 
-        
+
         const obj = res.map(video => ({
             ...video,
             user: { username: video.user.username }
         }));
-        
-        console.log("UID >>> ", uid, "\n RES >> ", obj);
+
+        //console.log("UID >>> ", uid, "\n RES >> ", obj);
 
         return obj;
     }
@@ -63,5 +64,21 @@ export class VideosService {
             time: videoDto.time,
             video: videoDto.video,
         });
+    }
+
+    public async deleteVideo(uid: number, vid: number): Promise<boolean> {
+        try {
+            const videoData = await this.repository.findOne(Video, { where: { id: vid, user_id: uid } })
+
+            await unlink(`/video-server/videos/${videoData.video}`);
+            const res = await this.repository.delete(Video, { id: vid, user_id: uid });
+
+
+            return res.affected > 0 ? true : false;
+
+        } catch (error) {
+            console.log("DELETE FILE ERROR >>>> ", error);
+            return false;
+        }
     }
 }

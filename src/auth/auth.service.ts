@@ -10,31 +10,39 @@ export class AuthService {
     private jwtService: JwtService
   ) { }
 
+
   async signIn(username: string, password: string) {
-    const user = await this.userService.findOne(username);
+    const user = await this.userService.findOneByUsername(username);
 
     if (user?.password !== password) {
       throw new UnauthorizedException();
     }
 
-    const payload = { username: user.username, password: user.password, id: user.id }
+    const payload = { username: user.username, id: user.id }
 
-    return await this.jwtService.signAsync(payload);
+    return this.jwtService.signAsync(payload);
 
   }
 
+  async refreshToken(id: number, username: string) {
+
+    const payload = { username: username, id: id }
+
+    return this.jwtService.signAsync(payload);
+  }
+
   async signUp(username: string, password: string) {
-    const user = await this.userService.findOne(username);
+    const user = await this.userService.findOneByUsername(username);
 
-    if (user) throw Error("A user with this nickname exists");
+    if (user) {
+      return "A user with this nickname exists"
+    }
 
-    const newUser = await this.userService.create({
+    await this.userService.create({
       username,
       password,
       time: Date.now()
     });
-
-    console.log("FINALY RES >>>> ", newUser);
 
     return "user has been created"
 

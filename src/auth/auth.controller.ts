@@ -1,31 +1,38 @@
-import { UseGuards, Request, Controller, Get, Post, Body, HttpStatus, HttpCode, Res } from '@nestjs/common';
+import { Req, UseGuards, Controller, Get, Post, Body, HttpStatus, HttpCode, Res } from '@nestjs/common';
 import { Response } from 'express';
 
 import { AuthService } from './auth.service';
-import { AuthGuard } from './auth.guard';
+import { UsersService } from 'src/users/users.service';
+
+import { AuthGuard } from '../guards/auth.guard';
 
 import { SignupDto } from './dto/signup.dto';
 import { AuthDto } from './dto/auth.dto';
 
-import { JwtService } from '@nestjs/jwt';
-
+import { RequestJWTUser } from 'src/Interfaces/RequestJWTUser';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService, private readonly jwtService: JwtService) { }
+  constructor(private readonly authService: AuthService, readonly usersService: UsersService) { }
 
   @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Get()
-  async getProfile(@Request() req) {
-    return req.user;
+  async getProfile(@Req() req: RequestJWTUser, @Res({ passthrough: true }) res: Response) {
+    const result = await this.usersService.findOne(req.user.id)
+    const user = { ...result }
+    delete user.password
+
+    
+    res.send(user);
   }
 
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get("logout")
-  async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
+  async logout(@Res({ passthrough: true }) res: Response) {
 
-    
+
     res.cookie('clown_token', '', { sameSite: "none", secure: true })
     res.send();
   }
@@ -40,12 +47,10 @@ export class AuthController {
   }
 
   @Post("signup")
-  async signUp(@Body() body: SignupDto, res: Response) {
-    const user = await this.authService.signUp(body.username, body.password);
+  async signUp(@Body() body: SignupDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.signUp(body.username, body.password);
 
-    console.log("RES AUTH >>> ", user);
-    //res.send(`DONE`)
-
+    res.send(result)
   }
 
 }

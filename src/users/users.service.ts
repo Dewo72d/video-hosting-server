@@ -15,20 +15,39 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const res = await this.repo.save(User, { username: createUserDto.username, password: createUserDto.password, time: createUserDto.time })
-    console.log("DB SIGNUP RES >> ", createUserDto);
+
     return res;
 
   }
 
-  async findOne(username: string) {
+  async findOneByUsername(username: string) {
     const res = await this.repo.findOne(User, { where: { username: username } });
     if (res === null) return null;
     return res;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async findOne(id: number) {
+    const res = await this.repo.findOne(User, { where: { id: id } });
+    if (res === null) return null;
+    return res;
   }
+
+  async updateUser(id: number, value: string, type: string): Promise<Boolean> {
+
+    try {  
+      const opt = type === "username" ? { username: value } : { password: value }
+
+      const res = await this.repo.update(User, { id: id }, opt);
+
+      if (res.affected > 0) return true
+
+    } catch (error) {
+      console.log("ERROR CHANGE USER >>> ", error);
+
+      return false
+    }
+  }
+
 
   remove(id: number) {
     return `This action removes a #${id} user`;

@@ -9,7 +9,7 @@ import {
     Res,
     HttpStatus,
     Param,
-    Post, Body, Req, UsePipes,
+    Post, Body, Req, UsePipes, UseGuards,
 } from '@nestjs/common';
 
 import { createReadStream, statSync } from 'fs';
@@ -21,17 +21,20 @@ import { GetUserFromJwt } from 'src/decorators/get-user-from-jwt.decorator';
 
 
 import { VideosService } from './videos.service';
+import { UsersService } from 'src/users/users.service';
 
 import { VideoWithUsername } from './dto/video-with-username.dto';
 import { Video } from './entities/videos.entity';
 
-
+import { AuthGuard } from 'src/guards/auth.guard';
 
 
 @Controller('videos')
 export class VideosController {
-    constructor(private readonly videos: VideosService) {
-    }
+    constructor(
+        private readonly videos: VideosService,
+        private readonly usersService: UsersService
+    ) { }
 
     @Get()
     async getAll(): Promise<VideoWithUsername[]> {
@@ -77,14 +80,14 @@ export class VideosController {
 
         }
     }
-
+    @UseGuards(AuthGuard)
     @Post('video/upload')
     @UseInterceptors(FileInterceptor('file', multerConfig))
     async upload(
         @UploadedFile() file: Express.Multer.File,
         @Body() data: { desc: string, name: string },
         @Res() res: Response,
-        @GetUserFromJwt() user: any
+        @GetUserFromJwt() user: { username: string, id: number }
     ) {
         try {
             if (data.desc.length === 0 || data.name.length === 0) throw Error("EMPTY FIELDS");
@@ -105,6 +108,18 @@ export class VideosController {
         }
     }
 
+
+    @UseGuards(AuthGuard)
+    @Post('/video/delete')
+    async deleteVideo(
+        @GetUserFromJwt() user: { username: string, id: number },
+        @Res() res: Response,
+        @Body() body: { id: number }
+    ) {
+        const result = await this.videos.deleteVideo(user.id, body.id);
+
+        res.send(result)
+    }
 
 }
 
