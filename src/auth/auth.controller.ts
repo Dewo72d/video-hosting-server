@@ -24,7 +24,7 @@ export class AuthController {
     delete user.password
 
     
-    res.send(user);
+    return user;
   }
 
   @UseGuards(AuthGuard)

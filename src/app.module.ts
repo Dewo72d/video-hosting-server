@@ -31,8 +31,6 @@ import { User } from './users/entities/user.entity';
         AuthModule,
         UsersModule,
     ],
-    /* controllers: [VideosController], */
-    /* providers: [VideosService], */
 })
 export class AppModule {
 }
