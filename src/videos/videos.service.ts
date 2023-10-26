@@ -1,6 +1,7 @@
+import { unlink, access, constants } from 'fs/promises';
+
 import { Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { unlink } from 'fs/promises';
 import { EntityManager, Repository } from 'typeorm';
 
 
@@ -23,8 +24,16 @@ export class VideosService {
     ) { }
 
 
-    public async getAll(): Promise<VideoWithUsername[]> {
-        const res = await this.repository.find(Video, { relations: ["user"] });
+    public async getAll(page: number = 1): Promise<VideoWithUsername[]> {
+        const limit = 10;
+        const offset = (page - 1) * limit;
+
+
+        const res = await this.repository.find(Video, {
+            relations: ["user"],
+            skip: offset,
+            take: limit
+        });
 
         const obj = res.map(video => ({
             ...video,
@@ -43,14 +52,12 @@ export class VideosService {
             user: { username: video.user.username }
         }));
 
-        //console.log("UID >>> ", uid, "\n RES >> ", obj);
-
         return obj;
     }
 
-    public async getVideoPath(video: string): Promise<string | null> {
+    public async getVideoPath(id: number): Promise<string | null> {
 
-        const res = await this.repository.findOne(Video, { where: { video: video } });
+        const res = await this.repository.findOne(Video, { where: { id: id } });
 
         if (res === null) return null;
         return `/video-server/videos/${res.video}`;
@@ -69,15 +76,21 @@ export class VideosService {
     public async deleteVideo(uid: number, vid: number): Promise<boolean> {
         try {
             const videoData = await this.repository.findOne(Video, { where: { id: vid, user_id: uid } })
+            const path = `/video-server/videos/${videoData.video}`;
 
-            await unlink(`/video-server/videos/${videoData.video}`);
-            const res = await this.repository.delete(Video, { id: vid, user_id: uid });
+            await this.repository.delete(Video, { id: vid, user_id: uid });
 
+            await access(path, constants.F_OK);
+            await unlink(path);
 
-            return res.affected > 0 ? true : false;
+            return true;
+
 
         } catch (error) {
             console.log("DELETE FILE ERROR >>>> ", error);
+            if (error.code === "ENOENT") {
+                return true
+            }
             return false;
         }
     }

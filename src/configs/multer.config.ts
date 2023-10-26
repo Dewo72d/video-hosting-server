@@ -19,8 +19,8 @@ export const multerConfig = {
         },
 
         filename: (req, file, cb) => {
-            //const uniqueSuffix = Math.round(Math.random() * 1e9);
-            cb(null, file.originalname);
+            const uniqueSuffix = Math.round(Math.random() * 1e9);
+            cb(null, uniqueSuffix + file.originalname);
         },
     }),
 

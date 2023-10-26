@@ -3,13 +3,12 @@ import {
     Get,
     UploadedFile,
     UseInterceptors,
-    StreamableFile,
     Headers,
-    Header,
     Res,
     HttpStatus,
     Param,
-    Post, Body, Req, UsePipes, UseGuards,
+    Query,
+    Post, Body, UseGuards,
 } from '@nestjs/common';
 
 import { createReadStream, statSync } from 'fs';
@@ -21,10 +20,8 @@ import { GetUserFromJwt } from 'src/decorators/get-user-from-jwt.decorator';
 
 
 import { VideosService } from './videos.service';
-import { UsersService } from 'src/users/users.service';
 
 import { VideoWithUsername } from './dto/video-with-username.dto';
-import { Video } from './entities/videos.entity';
 
 import { AuthGuard } from 'src/guards/auth.guard';
 
@@ -33,12 +30,14 @@ import { AuthGuard } from 'src/guards/auth.guard';
 export class VideosController {
     constructor(
         private readonly videos: VideosService,
-        private readonly usersService: UsersService
+
     ) { }
 
     @Get()
-    async getAll(): Promise<VideoWithUsername[]> {
-        return this.videos.getAll();
+    async getAll(@Query('page') page: number): Promise<VideoWithUsername[]> {
+        console.log("PAGE ??? >>> ", page);
+        
+        return this.videos.getAll(page);
     };
 
     @Get('/channel/:username/:uid')
@@ -49,7 +48,7 @@ export class VideosController {
 
 
     @Get('video/:id')
-    async sendRecently(@Param('id') id: string, @Headers() headers, @Res() res: Response): Promise<void | null> {
+    async sendRecently(@Param('id') id: number, @Headers() headers, @Res() res: Response): Promise<void | null> {
 
         const video = await this.videos.getVideoPath(id);
 

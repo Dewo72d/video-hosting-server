@@ -24,7 +24,7 @@ import { User } from './users/entities/user.entity';
             database: process.env.DB_DATABASE,
             type: 'postgres',
             entities: [Video, User],
-            synchronize: true, // never use TRUE in production!
+            synchronize:false, // never use TRUE in production!
 
         }),
         VideosModule,

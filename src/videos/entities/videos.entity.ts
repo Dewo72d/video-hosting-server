@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {Unique, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 
 @Entity('videos')
+@Unique(['video'])
 export class Video {
     @PrimaryGeneratedColumn({ type: 'integer' })
     id: number;
