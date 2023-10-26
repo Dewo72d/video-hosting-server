@@ -1,16 +1,15 @@
-## Description
+### Simple video hosting (Backend)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+#### [Nest](https://github.com/nestjs/nest) framework / TypeScript  / TypeOrm
 
-## Installation
 
-```bash
-$ yarn install
-```
 
 ## Running the app
 
 ```bash
+# install
+$ yarn install
+
 # development
 $ yarn run start
 
